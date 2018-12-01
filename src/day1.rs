@@ -5,7 +5,6 @@ pub fn solve_part1(input: &str) -> i32 {
     input.lines().map(|l| l.parse::<i32>().unwrap()).sum()
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::solve_part1;
