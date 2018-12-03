@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub struct Claim {
+    pub id: u32,
     pub left: u32,
     pub top: u32,
     pub width: u32,
@@ -10,8 +11,9 @@ pub struct Claim {
 pub fn input_gen(input: &str) -> Vec<Claim> {
     input
         .lines()
-        .map(|line| {
-            let (_, last) = line.split_at(line.find('@').unwrap() + 1);
+        .map(|line| { 
+            let (first, last) = line.split_at(line.find('@').unwrap() + 1);
+            let id = first.trim_matches(|c| c == '#' || c == '@').trim().parse().unwrap();
             let parts = last.split(": ").collect::<Vec<&str>>();
             let edges = parts[0]
                 .split(",")
@@ -22,6 +24,7 @@ pub fn input_gen(input: &str) -> Vec<Claim> {
                 .map(|s| s.parse().unwrap())
                 .collect::<Vec<u32>>();
             Claim {
+                id, 
                 left: edges[0],
                 top: edges[1],
                 width: dimensions[0],
