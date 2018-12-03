@@ -37,14 +37,14 @@ pub fn solve_part2(input: &str) -> String {
     let mut candidate2 = "";
     for l1 in input.lines() {
         for l2 in input.lines() {
-            let mut diffCount = 0;
+            let mut diff_count = 0;
             for (c1, c2) in l1.chars().zip(l2.chars()) {
                 if (c1 != c2) {
-                    diffCount += 1;
+                    diff_count += 1;
                 }
             }
 
-            if diffCount == 1 {
+            if diff_count == 1 {
                 candidate1 = l1;
                 candidate2 = l2;
             }
@@ -58,4 +58,3 @@ pub fn solve_part2(input: &str) -> String {
     }
     return res;
 }
-
