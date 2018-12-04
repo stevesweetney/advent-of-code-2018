@@ -6,3 +6,5 @@ authors = ["Steve Sweetney <stevesweetney@gmail.com>"]
 [dependencies]
 aoc-runner = "0.1.0"
 aoc-runner-derive = "0.1.0"
+regex = "1"
+lazy_static = "1.2.0"
