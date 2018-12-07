@@ -35,6 +35,8 @@ pub enum Action {
     Wake,
 }
 
+type SleepMap = HashMap<u32, Vec<Range<u32>>>;
+
 #[aoc_generator(day4)]
 pub fn input_gen(input: &str) -> Vec<Record> {
     let mut records: Vec<Record> = input
@@ -64,10 +66,9 @@ pub fn input_gen(input: &str) -> Vec<Record> {
     records
 }
 
-#[aoc(day4, part1)]
-pub fn solve_part1(input: &[Record]) -> u32 {
+fn create_sleep_freq_map(input: &[Record]) -> SleepMap {
     let (mut guard_on_duty, mut sleep_start) = (0, 0);
-    let mut sleep_times: HashMap<u32, Vec<Range<u32>>> = HashMap::new();
+    let mut sleep_times: SleepMap = HashMap::new();
     for rec in input {
         match rec.action {
             Action::ShiftStart(id) => guard_on_duty = id,
@@ -80,12 +81,36 @@ pub fn solve_part1(input: &[Record]) -> u32 {
             }
         }
     }
+    sleep_times
+}
+
+#[aoc(day4, part1)]
+pub fn solve_part1(input: &[Record]) -> u32 {
+    let mut sleep_times = create_sleep_freq_map(input);
     let id = find_most_sleep(&sleep_times);
-    let min = most_minute_slept(id, &sleep_times);
+    let (min, _) = most_minute_slept(id, &sleep_times);
     id * min
 }
 
-fn find_most_sleep(sleep_times: &HashMap<u32, Vec<Range<u32>>>) -> u32 {
+#[aoc(day4, part2)]
+pub fn solve_part2(input: &[Record]) -> u32 {
+    let mut sleep_times = create_sleep_freq_map(input);
+
+    let (mut max_min, mut max_freq, mut id) = (0, 0, 0);
+
+    for guard_id in sleep_times.keys() {
+        let (min, freq) = most_minute_slept(*guard_id, &sleep_times);
+        if freq > max_freq {
+            max_freq = freq;
+            max_min = min;
+            id = *guard_id;
+        }
+    }
+
+    id * max_min
+}
+
+fn find_most_sleep(sleep_times: &SleepMap) -> u32 {
     let (mut max_sleep, mut id) = (0, 0);
 
     for (guard_id, ranges) in sleep_times {
@@ -103,7 +128,7 @@ fn find_most_sleep(sleep_times: &HashMap<u32, Vec<Range<u32>>>) -> u32 {
     id
 }
 
-fn most_minute_slept(guard_id: u32, sleep_times: &HashMap<u32, Vec<Range<u32>>>) -> u32 {
+fn most_minute_slept(guard_id: u32, sleep_times: &SleepMap) -> (u32, u32) {
     let (mut most_frequent_minute, mut max_minute) = (0, 0);
     let mut freq_map = HashMap::new();
     let ranges = sleep_times.get(&guard_id).unwrap();
@@ -120,7 +145,7 @@ fn most_minute_slept(guard_id: u32, sleep_times: &HashMap<u32, Vec<Range<u32>>>)
         }
     }
 
-    most_frequent_minute
+    (most_frequent_minute, max_minute)
 }
 
 #[cfg(test)]
