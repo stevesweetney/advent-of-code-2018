@@ -15,11 +15,38 @@ lazy_static! {
 
 #[aoc(day5, part1)]
 pub fn solve_part1(input: &str) -> usize {
-    let mut resulting_polymer = input.to_owned();
-    while regexp.is_match(&resulting_polymer) {
-        resulting_polymer = regexp.replace_all(&resulting_polymer, "").into_owned();
+    react_polymer(input.to_owned())
+}
+
+#[aoc(day5, part2)]
+pub fn solve_part2(input: &str) -> usize {
+    let lowercase_alpha = (b'a'..=b'z')
+        .map(|c| c as char)
+        .filter(|c| c.is_ascii_lowercase())
+        .collect::<Vec<char>>();
+    let mut min_length = input.len();
+    for c in lowercase_alpha {
+        let resulting_polymer = remove_one_type(input, c);
+        let curr_length = react_polymer(resulting_polymer);
+        if min_length > curr_length {
+            min_length = curr_length;
+        }
     }
-    resulting_polymer.trim().len()
+
+    min_length
+}
+
+pub fn react_polymer(mut polymer: String) -> usize {
+    while regexp.is_match(&polymer) {
+        polymer = regexp.replace_all(&polymer, "").into_owned();
+    }
+    polymer.trim().len()
+}
+
+pub fn remove_one_type(polymer: &str, polymer_type: char) -> String {
+    let uppercase = polymer_type.to_uppercase().to_string();
+    let type_regexp = Regex::new(&format!("({}|{})", polymer_type, uppercase,)).unwrap();
+    type_regexp.replace_all(polymer, "").into_owned()
 }
 
 #[cfg(test)]
@@ -34,5 +61,11 @@ mod test {
         assert_eq!(solve_part1(input), 10);
         assert_eq!(solve_part1(input2), input2.len());
         assert_eq!(solve_part1(input3), 0);
+    }
+
+    #[test]
+    fn test_part2() {
+        let input = include_str!("../input/tests/d5.txt");
+        assert_eq!(solve_part2(input), 4);
     }
 }
