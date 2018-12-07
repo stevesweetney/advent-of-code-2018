@@ -93,7 +93,7 @@ fn create_claim(claim: &Claim, fabric: &mut [[i16; 1000]; 1000]) {
 }
 
 fn check_claim(claim: &Claim, fabric: &mut [[i16; 1000]; 1000]) -> bool {
-    let mut intact = true;
+    let intact = true;
     for row in fabric
         .iter_mut()
         .skip(claim.top as usize)

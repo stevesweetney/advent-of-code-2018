@@ -86,7 +86,7 @@ fn create_sleep_freq_map(input: &[Record]) -> SleepMap {
 
 #[aoc(day4, part1)]
 pub fn solve_part1(input: &[Record]) -> u32 {
-    let mut sleep_times = create_sleep_freq_map(input);
+    let sleep_times = create_sleep_freq_map(input);
     let id = find_most_sleep(&sleep_times);
     let (min, _) = most_minute_slept(id, &sleep_times);
     id * min
@@ -94,7 +94,7 @@ pub fn solve_part1(input: &[Record]) -> u32 {
 
 #[aoc(day4, part2)]
 pub fn solve_part2(input: &[Record]) -> u32 {
-    let mut sleep_times = create_sleep_freq_map(input);
+    let sleep_times = create_sleep_freq_map(input);
 
     let (mut max_min, mut max_freq, mut id) = (0, 0, 0);
 

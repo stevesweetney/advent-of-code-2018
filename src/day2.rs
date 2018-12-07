@@ -1,4 +1,4 @@
-use std::{collections::HashMap, i32};
+use std::collections::HashMap;
 
 #[aoc(day2, part1)]
 pub fn solve_part1(input: &str) -> u32 {
@@ -7,23 +7,23 @@ pub fn solve_part1(input: &str) -> u32 {
     for line in input.lines() {
         let mut map = HashMap::new();
         for c in line.chars() {
-            let mut entry = map.entry(c).or_insert(0);
+            let entry = map.entry(c).or_insert(0);
             *entry += 1;
         }
-        let mut containsTwo = false;
-        let mut containsThree = false;
+        let mut contains_two = false;
+        let mut contains_three = false;
         for (_, o) in map.into_iter() {
             if o == 2 {
-                containsTwo = true;
+                contains_two = true;
             } else if o == 3 {
-                containsThree = true;
+                contains_three = true;
             }
         }
-        if containsTwo {
+        if contains_two {
             two_count += 1;
         }
 
-        if containsThree {
+        if contains_three {
             three_count += 1;
         }
     }
@@ -39,7 +39,7 @@ pub fn solve_part2(input: &str) -> String {
         for l2 in input.lines() {
             let mut diff_count = 0;
             for (c1, c2) in l1.chars().zip(l2.chars()) {
-                if (c1 != c2) {
+                if c1 != c2 {
                     diff_count += 1;
                 }
             }
