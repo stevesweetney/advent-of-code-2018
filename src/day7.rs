@@ -18,9 +18,10 @@ fn solve_part1(input: &str) -> String {
     let mut g = input
         .parse::<Graph>()
         .expect("Failed to parse graph from str");
-    let mut processing = MinMaxHeap::new();
+    let mut processing = MinMaxHeap::with_capacity(26);
     let mut steps = String::new();
 
+    // Topological sort!
     for (s, in_degree) in &g.in_degrees {
         if *in_degree == 0 {
             processing.push(*s);
