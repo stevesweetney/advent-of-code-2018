@@ -8,6 +8,9 @@ use std::{
     u32::MAX,
 };
 
+#[cfg(not(test))]
+const PART2_CUTOFF: f32 = 10000.0;
+
 fn manhattan_distance(p1: &[f32], p2: &[f32]) -> f32 {
     p1.iter()
         .zip(p2)
@@ -42,11 +45,28 @@ fn solve_part1(input: &[Point]) -> u32 {
         if nearest[0].0 != nearest[1].0 && !infinite_areas.contains(nearest[0].1) {
             let area = area_map.entry(nearest[0].1).or_insert(0);
             *area += 1;
-            //println!("{} -- {:?}", area, nearest[0].1);
             best = cmp::max(best, *area);
         }
     }
     best
+}
+
+#[aoc(day6, part2)]
+fn solve_part2(input: &[Point]) -> usize {
+    let (rect, points_tree) = process_tree_and_rect(input);
+    let mut points_in_region = HashSet::new();
+
+    for (i, p) in rect.points_iter().enumerate() {
+        let total_distance = points_tree
+            .iter_nearest(&[p.0 as f32, p.1 as f32], &manhattan_distance)
+            .unwrap()
+            .fold(0.0, |acc, (distance, _)| distance + acc);
+        if total_distance < PART2_CUTOFF {
+            points_in_region.insert(i);
+        }
+    }
+
+    points_in_region.len()
 }
 
 fn process_tree_and_rect(points: &[Point]) -> (Rectangle, PointsTree) {
@@ -153,6 +173,9 @@ impl<'r> Iterator for PointsIter<'r> {
 }
 
 #[cfg(test)]
+const PART2_CUTOFF: f32 = 32.0;
+
+#[cfg(test)]
 mod test {
     use super::*;
 
@@ -160,6 +183,12 @@ mod test {
     fn test_part1() {
         let input = input_gen(include_str!("../input/tests/d6.txt"));
         assert_eq!(solve_part1(&input), 17);
+    }
+
+    #[test]
+    fn test_part2() {
+        let input = input_gen(include_str!("../input/tests/d6.txt"));
+        assert_eq!(solve_part2(&input), 16);
     }
 
     #[test]
