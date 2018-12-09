@@ -27,6 +27,9 @@ fn solve_part1(input: &[Point]) -> u32 {
     let (rect, points_tree) = process_tree_and_rect(input);
     let mut infinite_areas = HashSet::<usize>::new();
 
+    // My thought process here is that
+    // the points that are nearest to coordinates on the perimeter
+    // of the bounding rectangle probably span infinitely
     for p in rect.perimeter_list() {
         let nearest = points_tree
             .nearest(&[p.x as f32, p.y as f32], 2, &manhattan_distance)
@@ -42,6 +45,8 @@ fn solve_part1(input: &[Point]) -> u32 {
         let nearest = points_tree
             .nearest(&[p.0 as f32, p.1 as f32], 2, &manhattan_distance)
             .unwrap();
+        // Check that the nearest 2 points are not tied and that
+        // the nearest point has a finite area
         if nearest[0].0 != nearest[1].0 && !infinite_areas.contains(nearest[0].1) {
             let area = area_map.entry(nearest[0].1).or_insert(0);
             *area += 1;
@@ -56,6 +61,9 @@ fn solve_part2(input: &[Point]) -> usize {
     let (rect, points_tree) = process_tree_and_rect(input);
     let mut points_in_region = HashSet::new();
 
+    // Just go through all the coordinates in the bounding rectangle
+    // marking those that have a total distance to all points are less
+    // than the cutoff
     for (i, p) in rect.points_iter().enumerate() {
         let total_distance = points_tree
             .iter_nearest(&[p.0 as f32, p.1 as f32], &manhattan_distance)
@@ -73,6 +81,8 @@ fn process_tree_and_rect(points: &[Point]) -> (Rectangle, PointsTree) {
     let (mut min_x, mut max_x, mut min_y, mut max_y) = (MAX, 0, MAX, 0);
     let mut tree = KdTree::new_with_capacity(2, points.len());
 
+    // The idea here is to create the smallest bounding rectangle that contains all
+    // of the point
     for (i, p) in points.iter().enumerate() {
         min_x = cmp::min(min_x, p.x);
         min_y = cmp::min(min_y, p.y);
