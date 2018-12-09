@@ -135,11 +135,10 @@ fn most_minute_slept(guard_id: u32, sleep_times: &SleepMap) -> (u32, u32) {
 
     for r in ranges.clone() {
         for m in r {
-            let mut e = *freq_map.entry(m).or_insert(0);
-            e += 1;
-            freq_map.insert(m, e);
-            if e > max_minute {
-                max_minute = e;
+            let mut e = freq_map.entry(m).or_insert(0);
+            *e += 1;
+            if *e > max_minute {
+                max_minute = *e;
                 most_frequent_minute = m;
             }
         }
