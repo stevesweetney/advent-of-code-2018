@@ -7,8 +7,11 @@ fn solve_part1(_: &str) -> Coords {
     let mut grid = vec![vec![0; 300]; 300];
     populate_fuel_cells(&mut grid);
     let (x, y, _, total) = square_total(&grid, 3);
+
     println!("{}", total);
     print_square(&grid, 3, x - 1, y - 1);
+
+
     Coords {
         x: x as u32,
         y: y as u32,
@@ -19,10 +22,11 @@ fn solve_part1(_: &str) -> Coords {
 #[aoc(day11, part2)]
 fn solve_part2(_: &str) -> Coords {
     let mut grid = vec![vec![0; 300]; 300];
-    populate_fuel_cells(&mut grid);
     let mut best = (0, 0, 0, 0);
-    let mut sum_all: i32 = grid.iter().cloned().flatten().sum();
 
+    populate_fuel_cells(&mut grid);
+
+    // Brute force - check best totals for 4 <= square_size  < 300
     for i in 4..300 {
         let res = square_total(&grid, i);
         if res.3 > best.3 {
@@ -30,6 +34,8 @@ fn solve_part2(_: &str) -> Coords {
         }
     }
     let (x, y, size, total) = best;
+
+
     println!("Total: {}", total);
     Coords {
         x: x as u32,
