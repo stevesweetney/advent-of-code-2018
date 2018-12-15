@@ -1,10 +1,22 @@
 use std::collections::HashMap;
+use std::fmt::{self, Display};
 
 type Track = Vec<Vec<char>>;
 
 // Prints (x, y) coordinate of collision instead of returning
 #[aoc(day13, part1)]
-fn solve_part1(input: &str) -> u32 {
+fn solve_part1(input: &str) -> Coords {
+    simulate_carts(input, true)
+}
+
+#[aoc(day13, part2)]
+fn solve_part2(input: &str) -> Coords {
+    simulate_carts(input, false)
+}
+
+// if stop_at_first_crash is true return position of the first crash
+// otherwise return the position of the last cart
+fn simulate_carts(input: &str, stop_at_first_crash: bool) -> Coords {
     let mut tracks: Track = {
         input
             .lines()
@@ -90,20 +102,44 @@ fn solve_part1(input: &str) -> u32 {
                         }
 
                         if found_collision {
+                            if stop_at_first_crash {
+                                return Coords {
+                                    col: c.col,
+                                    row: c.row,
+                                };
+                            }
                             collision_at = (c.col, c.row);
-                            println!("TICKS: {}", ticks + 1);
-                            return 0;
+                            let col_cart = carts
+                                .iter()
+                                .find(|crt| {
+                                    crt.col == collision_at.0
+                                        && crt.row == collision_at.1
+                                        && !is_cart(crt.track)
+                                })
+                                .unwrap();
+                            tracks[collision_at.1][collision_at.0] = col_cart.track;
+                            carts.retain(|cart| {
+                                !(cart.col == collision_at.0 && cart.row == collision_at.1)
+                            });
+                        } else {
+                            tracks[c.row][c.col] = match c.direction {
+                                Direction::Up => '^',
+                                Direction::Left => '<',
+                                Direction::Down => 'v',
+                                Direction::Right => '>',
+                            };
                         }
-
-                        tracks[c.row][c.col] = match c.direction {
-                            Direction::Up => '^',
-                            Direction::Left => '<',
-                            Direction::Down => 'v',
-                            Direction::Right => '>',
-                        };
                     }
                 }
             }
+        }
+        if carts.len() == 1 {
+            let c = &carts[0];
+            println!("Last cart at: ({}, {})", c.col, c.row);
+            return Coords {
+                col: c.col,
+                row: c.row,
+            };
         }
         for cart in carts.iter_mut() {
             cart.moved = false;
@@ -111,7 +147,19 @@ fn solve_part1(input: &str) -> u32 {
         ticks += 1;
     }
 
-    0
+    Coords { row: 0, col: 0 }
+}
+
+#[derive(Debug, PartialEq)]
+struct Coords {
+    row: usize,
+    col: usize,
+}
+
+impl Display for Coords {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.col, self.row)
+    }
 }
 
 fn init_carts(tracks: &mut Track) -> Vec<Cart> {
@@ -131,6 +179,7 @@ fn init_carts(tracks: &mut Track) -> Vec<Cart> {
     carts
 }
 
+#[derive(PartialEq, Debug)]
 struct Cart {
     direction: Direction,
     track: char, // type of track the cart is on
@@ -199,8 +248,16 @@ mod test {
     #[test]
     fn test_part1() {
         let input = include_str!("../input/tests/d13.txt");
+        let coords = Coords { col: 7, row: 3 };
+        assert_eq!(solve_part1(input), coords);
+    }
 
-        assert_eq!(solve_part1(input), (7, 3));
+    #[test]
+    fn test_part2() {
+        let input = include_str!("../input/tests/d13-2.txt");
+        let coords = Coords { col: 6, row: 4 };
+
+        assert_eq!(solve_part2(input), coords);
     }
 
     #[test]
