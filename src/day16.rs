@@ -3,12 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-// #[aoc_generator(day16)]
-// fn input(input: &str) -> Vec<&str> {
-
-// }
-
-fn input_gen(input: &str) -> (u32, HashMap<u32, String>, &str) {
+fn input_gen(input: &str) -> (u32, HashMap<u32, OPCODE>, &str) {
     let mut parts = input.split("\n\n\n");
     let part1 = parts.next().unwrap();
     let (part1_answer, op_map) = run_samples(
@@ -40,99 +35,95 @@ fn solve_part2(input: &str) -> usize {
     model.registers[0]
 }
 
-fn run_samples(samples: Vec<Sample>) -> (u32, HashMap<u32, String>) {
+fn run_samples(samples: Vec<Sample>) -> (u32, HashMap<u32, OPCODE>) {
+    use self::OPCODE::*;
     let mut three_or_more = 0;
-    let mut op_map: HashMap<u32, HashSet<String>> = HashMap::new();
+    let mut op_map: HashMap<u32, HashSet<OPCODE>> = HashMap::new();
     for s in &samples {
         let mut possible_op = 0;
         let mut result = s.after[s.output];
         let mut opcode_candidates = HashSet::new();
         // check addr
         if s.before[s.input_a] + s.before[s.input_b] == result {
-            opcode_candidates.insert("addr".to_owned());
+            opcode_candidates.insert(Addr);
             possible_op += 1;
         }
         // check addi
         if s.before[s.input_a] + s.input_b == result {
-            opcode_candidates.insert("addi".to_owned());
+            opcode_candidates.insert(Addi);
             possible_op += 1;
         }
         // check mulr
         if s.before[s.input_a] * s.before[s.input_b] == result {
-            opcode_candidates.insert("mulr".to_owned());
+            opcode_candidates.insert(Mulr);
             possible_op += 1;
         }
         // check muli
         if s.before[s.input_a] * s.input_b == result {
-            opcode_candidates.insert("muli".to_owned());
+            opcode_candidates.insert(Muli);
             possible_op += 1;
         }
         // check banr
         if s.before[s.input_a] & s.before[s.input_b] == result {
-            opcode_candidates.insert("banr".to_owned());
+            opcode_candidates.insert(Banr);
             possible_op += 1;
         }
         // check bani
         if s.before[s.input_a] & s.input_b == result {
-            opcode_candidates.insert("bani".to_owned());
+            opcode_candidates.insert(Bani);
             possible_op += 1;
         }
         // check borr
         if s.before[s.input_a] | s.before[s.input_b] == result {
-            opcode_candidates.insert("borr".to_owned());
+            opcode_candidates.insert(Borr);
             possible_op += 1;
         }
         // check bori
         if s.before[s.input_a] | s.input_b == result {
-            opcode_candidates.insert("bori".to_owned());
+            opcode_candidates.insert(Bori);
             possible_op += 1;
         }
         // check setr
         if s.before[s.input_a] == result {
-            opcode_candidates.insert("setr".to_owned());
+            opcode_candidates.insert(Setr);
             possible_op += 1;
         }
         // check seti
         if s.input_a == result {
-            opcode_candidates.insert("seti".to_owned());
+            opcode_candidates.insert(Seti);
             possible_op += 1;
         }
 
         if result == 0 || result == 1 {
-            let bool_result = match result {
-                0 => false,
-                1 => true,
-                _ => unreachable!(),
-            };
             // check gtir
-            if (s.input_a > s.before[s.input_b]) == bool_result {
-                opcode_candidates.insert("gtir".to_owned());
+            if (s.input_a > s.before[s.input_b]) as usize == result {
+                opcode_candidates.insert(Gtir);
                 possible_op += 1;
             }
             // check gtri
-            if (s.before[s.input_a] > s.input_b) == bool_result {
-                opcode_candidates.insert("gtri".to_owned());
+            if (s.before[s.input_a] > s.input_b) as usize == result {
+                opcode_candidates.insert(Gtri);
                 possible_op += 1;
             }
             // check gtrr
-            if (s.before[s.input_a] > s.before[s.input_b]) == bool_result {
-                opcode_candidates.insert("gtrr".to_owned());
+            if (s.before[s.input_a] > s.before[s.input_b]) as usize == result {
+                opcode_candidates.insert(Gtrr);
                 possible_op += 1;
             }
 
             // check eqir
-            if (s.input_a == s.before[s.input_b]) == bool_result {
-                opcode_candidates.insert("eqir".to_owned());
+            if (s.input_a == s.before[s.input_b]) as usize == result {
+                opcode_candidates.insert(Eqir);
                 possible_op += 1;
             }
             // check eqri
-            if (s.before[s.input_a] == s.input_b) == bool_result {
-                opcode_candidates.insert("eqri".to_owned());
+            if (s.before[s.input_a] == s.input_b) as usize == result {
+                opcode_candidates.insert(Eqri);
                 possible_op += 1;
             }
             // check eqrr
-            if (s.before[s.input_a] == s.before[s.input_b]) == bool_result {
-                opcode_candidates.insert("eqrr".to_owned());
+            if (s.before[s.input_a] == s.before[s.input_b]) as usize == result {
+                opcode_candidates.insert(Eqrr);
                 possible_op += 1;
             }
         }
@@ -154,7 +145,7 @@ fn run_samples(samples: Vec<Sample>) -> (u32, HashMap<u32, String>) {
     (three_or_more, final_opcode_map(op_map))
 }
 
-fn final_opcode_map(mut m: HashMap<u32, HashSet<String>>) -> HashMap<u32, String> {
+fn final_opcode_map(mut m: HashMap<u32, HashSet<OPCODE>>) -> HashMap<u32, OPCODE> {
     let mut result = HashMap::new();
     while result.len() < 16 {
         let mut removed = Vec::new();
@@ -176,13 +167,33 @@ fn final_opcode_map(mut m: HashMap<u32, HashSet<String>>) -> HashMap<u32, String
     result
 }
 
+#[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
+enum OPCODE {
+    Addr,
+    Addi,
+    Mulr,
+    Muli,
+    Banr,
+    Bani,
+    Bori,
+    Borr,
+    Setr,
+    Seti,
+    Gtir,
+    Gtri,
+    Gtrr,
+    Eqir,
+    Eqri,
+    Eqrr,
+}
+
 struct Model {
-    op_map: HashMap<u32, String>,
+    op_map: HashMap<u32, OPCODE>,
     registers: [usize; 4],
 }
 
 impl Model {
-    fn new(op_map: HashMap<u32, String>) -> Self {
+    fn new(op_map: HashMap<u32, OPCODE>) -> Self {
         Model {
             op_map,
             registers: [0, 0, 0, 0],
@@ -190,62 +201,62 @@ impl Model {
     }
 
     fn execute(&mut self, instruction: &[usize]) {
+        use self::OPCODE::*;
         let (opcode, a, b, c) = (
             instruction[0] as u32,
             instruction[1],
             instruction[2],
             instruction[3],
         );
-        match self.op_map[&opcode].as_ref() {
-            "addr" => {
+        match self.op_map[&opcode] {
+            Addr => {
                 self.registers[c] = self.registers[a] + self.registers[b];
             }
-            "addi" => {
+            Addi => {
                 self.registers[c] = self.registers[a] + b;
             }
-            "mulr" => {
+            Mulr => {
                 self.registers[c] = self.registers[a] * self.registers[b];
             }
-            "muli" => {
+            Muli => {
                 self.registers[c] = self.registers[a] * b;
             }
-            "banr" => {
+            Banr => {
                 self.registers[c] = self.registers[a] & self.registers[b];
             }
-            "bani" => {
+            Bani => {
                 self.registers[c] = self.registers[a] & b;
             }
-            "borr" => {
+            Borr => {
                 self.registers[c] = self.registers[a] | self.registers[b];
             }
-            "bori" => {
+            Bori => {
                 self.registers[c] = self.registers[a] | b;
             }
-            "setr" => {
+            Setr => {
                 self.registers[c] = self.registers[a];
             }
-            "seti" => {
+            Seti => {
                 self.registers[c] = a;
             }
-            "gtir" => {
+            Gtir => {
                 self.registers[c] = (a > self.registers[b]) as usize;
             }
-            "gtri" => {
+            Gtri => {
                 self.registers[c] = (self.registers[a] > b) as usize;
             }
-            "gtrr" => {
+            Gtrr => {
                 self.registers[c] = (self.registers[a] > self.registers[b]) as usize;
             }
-            "eqir" => {
+            Eqir => {
                 self.registers[c] = (a == self.registers[b]) as usize;
             }
-            "eqri" => {
+            Eqri => {
                 self.registers[c] = (self.registers[a] == b) as usize;
             }
-            "eqrr" => {
+            Eqrr => {
                 self.registers[c] = (self.registers[a] == self.registers[b]) as usize;
             }
-            _ => panic!("unexpected opcode"),
         }
     }
 }
@@ -296,16 +307,5 @@ impl FromStr for Sample {
             input_b: caps["B"].parse()?,
             output: caps["C"].parse()?,
         })
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    fn test_input() {
-        let input = include_str!("../input/tests/d16.txt");
-        input_gen_part1(input);
-        assert!(true);
     }
 }
